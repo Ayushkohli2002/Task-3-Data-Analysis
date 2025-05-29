@@ -1,0 +1,94 @@
+
+-- Query 1: SELECT with WHERE and ORDER BY
+SELECT * FROM customers WHERE city = 'New York' ORDER BY name;
+
+-- Output:
+-- +-------------+-------+-------------------+----------+
+-- | customer_id | name  | email             | city     |
+-- +-------------+-------+-------------------+----------+
+-- | 1           | Alice | alice@example.com | New York |
+-- +-------------+-------+-------------------+----------+
+
+
+-- Query 2: INNER JOIN for order details
+SELECT 
+    c.name AS customer_name, 
+    p.name AS product_name, 
+    o.quantity, 
+    o.order_date 
+FROM orders o
+INNER JOIN customers c ON o.customer_id = c.customer_id
+INNER JOIN products p ON o.product_id = p.product_id;
+
+-- Output:
+-- +---------------+--------------+----------+------------+
+-- | customer_name | product_name | quantity | order_date |
+-- +---------------+--------------+----------+------------+
+-- | Alice         | Laptop       | 1        | 2024-06-01 |
+-- | Bob           | Smartphone   | 2        | 2024-06-02 |
+-- | Charlie       | Desk Chair   | 3        | 2024-06-03 |
+-- | Alice         | Smartphone   | 1        | 2024-06-04 |
+-- +---------------+--------------+----------+------------+
+
+
+-- Query 3: Subquery - Customers with more than one order
+SELECT name FROM customers 
+WHERE customer_id IN (
+    SELECT customer_id FROM orders 
+    GROUP BY customer_id 
+    HAVING COUNT(*) > 1
+);
+
+-- Output:
+-- +--------+
+-- | name   |
+-- +--------+
+-- | Alice  |
+-- +--------+
+
+
+-- Query 4: Aggregate function (SUM) - Total sales per product
+SELECT 
+    p.name, 
+    SUM(o.quantity * p.price) AS total_sales 
+FROM orders o
+JOIN products p ON o.product_id = p.product_id
+GROUP BY p.name;
+
+-- Output:
+-- +-------------+-------------+
+-- | name        | total_sales |
+-- +-------------+-------------+
+-- | Laptop      | 1000.00     |
+-- | Smartphone  | 2100.00     |
+-- | Desk Chair  | 450.00      |
+-- +-------------+-------------+
+
+
+-- Query 5: View - Order Summary
+CREATE VIEW order_summary AS
+SELECT 
+    o.order_id,
+    c.name AS customer,
+    p.name AS product,
+    o.quantity,
+    p.price,
+    o.quantity * p.price AS total_cost,
+    o.order_date
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN products p ON o.product_id = p.product_id;
+
+-- Output:
+-- View created. You can now run:
+-- SELECT * FROM order_summary;
+
+-- Example output of SELECT * FROM order_summary:
+-- +----------+----------+------------+----------+--------+------------+------------+
+-- | order_id | customer | product    | quantity | price  | total_cost| order_date |
+-- +----------+----------+------------+----------+--------+------------+------------+
+-- | 1        | Alice    | Laptop     | 1        | 1000.00| 1000.00    | 2024-06-01 |
+-- | 2        | Bob      | Smartphone | 2        | 700.00 | 1400.00    | 2024-06-02 |
+-- | 3        | Charlie  | Desk Chair | 3        | 150.00 | 450.00     | 2024-06-03 |
+-- | 4        | Alice    | Smartphone | 1        | 700.00 | 700.00     | 2024-06-04 |
+-- +----------+----------+------------+----------+--------+------------+------------+
